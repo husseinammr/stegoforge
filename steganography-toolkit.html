@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StegoForge — Digital Forensics Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@400;600&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #111118;
+    --bg3: #1a1a24;
+    --accent: #00ff9d;
+    --accent2: #7c3aed;
+    --accent3: #f59e0b;
+    --text: #e8e8f0;
+    --muted: #6b7280;
+    --border: rgba(0,255,157,0.15);
+    --danger: #ef4444;
+    --info: #3b82f6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,157,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,157,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* Header */
+  header {
+    padding: 28px 0 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: var(--accent); }
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: rgba(0,255,157,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(0,255,157,0.3);
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 48px 0 36px;
+    text-align: center;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 5vw, 54px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .hero h1 .glow { color: var(--accent); text-shadow: 0 0 40px rgba(0,255,157,0.4); }
+  .hero p { color: var(--muted); font-size: 16px; max-width: 520px; margin: 0 auto 32px; line-height: 1.7; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 6px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    flex: 1;
+    min-width: 120px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .tab:hover { background: var(--bg3); color: var(--text); }
+  .tab.active {
+    background: rgba(0,255,157,0.12);
+    color: var(--accent);
+    border: 1px solid rgba(0,255,157,0.25);
+  }
+  .tab svg { width: 16px; height: 16px; }
+
+  /* Panels */
+  .panel { display: none; animation: fadeIn 0.3s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  /* Card */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card h3 .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* Drop zone */
+  .dropzone {
+    border: 2px dashed rgba(0,255,157,0.2);
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(0,255,157,0.02);
+    position: relative;
+  }
+  .dropzone:hover, .dropzone.drag { border-color: var(--accent); background: rgba(0,255,157,0.06); }
+  .dropzone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .dropzone-icon { font-size: 36px; margin-bottom: 12px; }
+  .dropzone p { color: var(--muted); font-size: 14px; }
+  .dropzone p strong { color: var(--accent); }
+
+  /* Form */
+  label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 6px; margin-top: 16px; }
+  label:first-child { margin-top: 0; }
+  input[type=text], textarea, select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: vertical;
+  }
+  input[type=text]:focus, textarea:focus, select:focus { border-color: rgba(0,255,157,0.4); }
+  textarea { min-height: 100px; }
+
+  /* Buttons */
+  .btn {
+    padding: 11px 24px;
+    border-radius: 8px;
+    border: none;
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+  .btn-primary:hover { background: #00e88d; transform: translateY(-1px); }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+  .btn-danger {
+    background: rgba(239,68,68,0.12);
+    color: var(--danger);
+    border: 1px solid rgba(239,68,68,0.2);
+  }
+
+  /* Result box */
+  .result-box {
+    background: var(--bg3);
+    border: 1px solid rgba(0,255,157,0.2);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    display: none;
+  }
+  .result-box.show { display: block; }
+  .result-box.error { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.05); }
+  .result-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .result-label.error-label { color: var(--danger); }
+  .result-text {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+    word-break: break-all;
+  }
+
+  /* Preview image */
+  .img-preview {
+    max-width: 100%;
+    max-height: 250px;
+    border-radius: 8px;
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    display: none;
+  }
+
+  /* Download btn */
+  .download-btn {
+    display: none;
+    margin-top: 14px;
+    width: 100%;
+    padding: 12px;
+    background: rgba(0,255,157,0.08);
+    border: 1px solid rgba(0,255,157,0.25);
+    border-radius: 8px;
+    color: var(--accent);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .download-btn:hover { background: rgba(0,255,157,0.15); }
+
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .stat-item {
+    background: var(--bg3);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 600; color: var(--accent); }
+  .stat-lbl { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* Progress */
+  .progress-wrap { margin-top: 16px; display: none; }
+  .progress-wrap.show { display: block; }
+  .progress-bar {
+    height: 4px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.3s;
+    box-shadow: 0 0 8px var(--accent);
+  }
+  .progress-text { font-size: 12px; color: var(--muted); margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
+
+  /* Alert */
+  .alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 12px;
+    display: none;
+  }
+  .alert.show { display: flex; align-items: flex-start; gap: 10px; }
+  .alert-success { background: rgba(0,255,157,0.08); border: 1px solid rgba(0,255,157,0.2); color: #a7f3d0; }
+  .alert-warn { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); color: #fcd34d; }
+  .alert-danger { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #fca5a5; }
+
+  /* Metadata table */
+  .meta-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+  .meta-table tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .meta-table tr:last-child { border-bottom: none; }
+  .meta-table td { padding: 8px 4px; }
+  .meta-table td:first-child { color: var(--muted); width: 40%; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .meta-table td:last-child { color: var(--text); word-break: break-all; }
+
+  /* Hash display */
+  .hash-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: var(--bg3);
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.06);
+    word-break: break-all;
+    margin-top: 6px;
+    color: var(--accent);
+  }
+
+  /* Row layout */
+  .row { display: flex; gap: 16px; }
+  .row .col { flex: 1; }
+  @media (max-width: 600px) { .row { flex-direction: column; } }
+
+  /* Tooltip hint */
+  .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* Footer */
+  footer {
+    padding: 32px 0 24px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    margin-top: 48px;
+  }
+  footer span { color: var(--accent); }
+
+  /* Canvas hidden */
+  #workCanvas { display: none; }
+
+  select option { background: #1a1a24; }
+</style>
+</head>
+<body>
+<canvas id="workCanvas"></canvas>
+
+<div class="container">
+  <header>
+    <div class="logo">Stego<span>Forge</span></div>
+    <div class="badge">v1.0 — FORENSICS TOOLKIT</div>
+  </header>
+
+  <div class="hero">
+    <h1>Digital Forensics &<br><span class="glow">Steganography</span> Toolkit</h1>
+    <p>إخفاء وكشف البيانات داخل الصور — تحليل جنائي رقمي متقدم لاختبار الاختراق والـ CTF</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('hide')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+      إخفاء نص
+    </button>
+    <button class="tab" onclick="switchTab('extract')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      استخراج نص
+    </button>
+    <button class="tab" onclick="switchTab('analyze')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35M11 8v3M11 14h.01"/></svg>
+      تحليل صورة
+    </button>
+    <button class="tab" onclick="switchTab('hash')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+      Hash & سلامة الملف
+    </button>
+  </div>
+
+  <!-- PANEL 1: HIDE -->
+  <div id="panel-hide" class="panel active">
+    <div class="card">
+      <h3><span class="dot"></span> إخفاء نص داخل صورة (LSB Steganography)</h3>
+      <label>ارفع صورة (PNG أو BMP مفضل)</label>
+      <div class="dropzone" id="dz-hide" ondragover="dzDrag(event,this)" ondragleave="dzLeave(this)" ondrop="dzDrop(event,'hide-file')">
+        <input type="file" id="hide-file" accept="image/*" onchange="loadHideImage(this)">
+        <div class="dropzone-icon">🖼️</div>
+        <p><strong>اسحب صورة هنا</strong> أو اضغط للاختيار</p>
+        <p id="hide-fname" style="margin-top:8px;font-size:13px;color:#00ff9d;"></p>
+      </div>
+      <img id="hide-preview" class="img-preview">
+
+      <label>النص السري المراد إخفاؤه</label>
+      <textarea id="hide-text" placeholder="اكتب أي نص سري هنا..."></textarea>
+
+      <label>كلمة مرور (اختياري — تزيد الأمان)</label>
+      <input type="text" id="hide-pass" placeholder="اتركها فارغة إذا لا تريد تشفيراً">
+      <p class="hint">كلمة المرور تخلط ترتيب البتات (XOR cipher) — يجب نفس الكلمة عند الاستخراج</p>
+
+      <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="hideText()">🔐 إخفاء النص في الصورة</button>
+        <button class="btn btn-ghost" onclick="clearHide()">مسح الكل</button>
+      </div>
+
+      <div class="progress-wrap" id="hide-progress">
+        <div class="progress-bar"><div class="progress-fill" id="hide-fill"></div></div>
+        <div class="progress-text" id="hide-prog-text">جاري المعالجة...</div>
+      </div>
+
+      <div class="result-box" id="hide-result">
+        <div class="result-label">✅ تم إخفاء النص بنجاح</div>
+        <div class="result-text" id="hide-result-text"></div>
+        <canvas id="outCanvas" style="max-width:100%;border-radius:8px;margin-top:12px;border:1px solid rgba(0,255,157,0.2)"></canvas>
+        <button class="download-btn" id="hide-dl" onclick="downloadStego()">⬇️ تحميل الصورة المعدلة</button>
+      </div>
+
+      <div class="alert" id="hide-alert"></div>
+    </div>
+
+    <div class="card">
+      <h3><span class="dot" style="background:var(--accent3);box-shadow:0 0 8px var(--accent3)"></span> كيف تعمل تقنية LSB؟</h3>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+        <div style="background:var(--bg3);border-radius:10px;padding:16px">
+          <div style="font-size:22px;margin-bottom:8px">1️⃣</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px">تحويل النص</div>
+          <div style="font-size:12px;color:var(--muted)">كل حرف يتحول إلى binary (8 bits)</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:10px;padding:16px">
+          <div style="font-size:22px;margin-bottom:8px">2️⃣</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px">البتة الأخيرة</div>
+          <div style="font-size:12px;color:var(--muted)">نعدل آخر bit من كل pixel (R,G,B) — لا يُلاحظ للعين</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:10px;padding:16px">
+          <div style="font-size:22px;margin-bottom:8px">3️⃣</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px">الصورة المخرجة</div>
+          <div style="font-size:12px;color:var(--muted)">الصورة تبدو طبيعية تماماً — فرق الألوان أقل من 1/255</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 2: EXTRACT -->
+  <div id="panel-extract" class="panel">
+    <div class="card">
+      <h3><span class="dot"></span> استخراج النص المخفي من صورة</h3>
+      <label>ارفع الصورة التي تحتوي على نص مخفي</label>
+      <div class="dropzone" id="dz-extract" ondragover="dzDrag(event,this)" ondragleave="dzLeave(this)" ondrop="dzDrop(event,'extract-file')">
+        <input type="file" id="extract-file" accept="image/*" onchange="loadExtractImage(this)">
+        <div class="dropzone-icon">🔍</div>
+        <p><strong>اسحب الصورة المشبوهة هنا</strong> أو اضغط للاختيار</p>
+        <p id="extract-fname" style="margin-top:8px;font-size:13px;color:#00ff9d;"></p>
+      </div>
+      <img id="extract-preview" class="img-preview">
+
+      <label>كلمة المرور (إذا كانت مستخدمة عند الإخفاء)</label>
+      <input type="text" id="extract-pass" placeholder="اتركها فارغة إذا لا يوجد تشفير">
+
+      <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="extractText()">🔓 استخراج النص المخفي</button>
+        <button class="btn btn-ghost" onclick="clearExtract()">مسح</button>
+      </div>
+
+      <div class="progress-wrap" id="extract-progress">
+        <div class="progress-bar"><div class="progress-fill" id="extract-fill"></div></div>
+        <div class="progress-text" id="extract-prog-text">جاري الاستخراج...</div>
+      </div>
+
+      <div class="result-box" id="extract-result">
+        <div class="result-label">📤 النص المستخرج</div>
+        <div class="result-text" id="extract-result-text"></div>
+        <button class="btn btn-ghost" style="margin-top:12px;font-size:13px" onclick="copyExtracted()">📋 نسخ النص</button>
+      </div>
+
+      <div class="result-box error" id="extract-error">
+        <div class="result-label error-label">⚠️ لا يوجد نص مخفي أو كلمة مرور خاطئة</div>
+        <div class="result-text" id="extract-error-text"></div>
+      </div>
+
+      <div class="alert" id="extract-alert"></div>
+    </div>
+  </div>
+
+  <!-- PANEL 3: ANALYZE -->
+  <div id="panel-analyze" class="panel">
+    <div class="card">
+      <h3><span class="dot" style="background:var(--accent2);box-shadow:0 0 8px var(--accent2)"></span> تحليل الصورة جنائياً</h3>
+      <label>ارفع الصورة للتحليل</label>
+      <div class="dropzone" id="dz-analyze" ondragover="dzDrag(event,this)" ondragleave="dzLeave(this)" ondrop="dzDrop(event,'analyze-file')">
+        <input type="file" id="analyze-file" accept="image/*" onchange="loadAnalyzeImage(this)">
+        <div class="dropzone-icon">🧪</div>
+        <p><strong>ارفع أي صورة</strong> لتحليلها</p>
+        <p id="analyze-fname" style="margin-top:8px;font-size:13px;color:#00ff9d;"></p>
+      </div>
+      <img id="analyze-preview" class="img-preview">
+
+      <button class="btn btn-primary" style="margin-top:20px" onclick="analyzeImage()">🔬 تحليل الصورة</button>
+
+      <div class="result-box" id="analyze-result">
+        <div class="result-label">📊 نتائج التحليل الجنائي</div>
+
+        <div style="margin-bottom:16px">
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">📐 معلومات الصورة</div>
+          <table class="meta-table" id="img-info-table"></table>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">🎨 تحليل قنوات الألوان</div>
+          <canvas id="histCanvas" style="width:100%;border-radius:8px;background:var(--bg3)"></canvas>
+        </div>
+
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">🚨 كشف التعديلات (LSB Analysis)</div>
+          <div id="lsb-analysis"></div>
+        </div>
+
+        <div style="margin-top:16px">
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">📊 الإحصاءات</div>
+          <div class="stats-grid" id="img-stats"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 4: HASH -->
+  <div id="panel-hash" class="panel">
+    <div class="card">
+      <h3><span class="dot" style="background:var(--accent3);box-shadow:0 0 8px var(--accent3)"></span> Hash وسلامة الملف</h3>
+      <label>ارفع أي ملف (صورة، PDF، أي نوع)</label>
+      <div class="dropzone" id="dz-hash" ondragover="dzDrag(event,this)" ondragleave="dzLeave(this)" ondrop="dzDrop(event,'hash-file')">
+        <input type="file" id="hash-file" onchange="loadHashFile(this)">
+        <div class="dropzone-icon">📁</div>
+        <p><strong>اسحب أي ملف هنا</strong></p>
+        <p id="hash-fname" style="margin-top:8px;font-size:13px;color:#00ff9d;"></p>
+      </div>
+
+      <button class="btn btn-primary" style="margin-top:20px" onclick="computeHashes()">🔑 احسب الـ Hashes</button>
+
+      <div class="result-box" id="hash-result">
+        <div class="result-label">🔑 نتائج Hash</div>
+
+        <div style="margin-bottom:16px">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:6px">معلومات الملف</div>
+          <table class="meta-table" id="file-info-table"></table>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:6px">MD5</div>
+          <div class="hash-val" id="md5-val">—</div>
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:6px">SHA-1</div>
+          <div class="hash-val" id="sha1-val">—</div>
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:6px">SHA-256</div>
+          <div class="hash-val" id="sha256-val">—</div>
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:6px">SHA-512</div>
+          <div class="hash-val" id="sha512-val">—</div>
+        </div>
+
+        <div style="margin-top:20px">
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px">تحقق من سلامة الملف</div>
+          <label>الصق الـ Hash المتوقع للمقارنة</label>
+          <input type="text" id="compare-hash" placeholder="الصق SHA-256 أو MD5 أو SHA-1 هنا للمقارنة">
+          <button class="btn btn-ghost" style="margin-top:12px" onclick="verifyHash()">✔️ تحقق</button>
+          <div class="alert" id="verify-alert"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="container">
+    <strong>StegoForge</strong> — Digital Forensics & Steganography Toolkit<br>
+    <span>100% Client-Side</span> — لا يُرسل أي بيانات للإنترنت — مبني بـ Vanilla JS + Canvas API<br>
+    <span style="color:var(--accent);margin-top:8px;display:inline-block">👨‍💻 Developed by: <strong>HUSSEIN AMMAR</strong></span>
+  </div>
+</footer>
+
+<script>
+// ======================== GLOBALS ========================
+let hideImgData = null, extractImgData = null, analyzeImgData = null;
+let hashFileData = null, hashFileName = '', hashFileSize = 0, hashFileType = '';
+let stegoCanvas = null, stegoCtx = null;
+
+// ======================== TAB SWITCHING ========================
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`#panel-${name}`).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ======================== DROPZONE ========================
+function dzDrag(e, el) { e.preventDefault(); el.classList.add('drag'); }
+function dzLeave(el) { el.classList.remove('drag'); }
+function dzDrop(e, inputId) {
+  e.preventDefault();
+  document.getElementById(inputId.split('-')[0] === 'hide' ? inputId : inputId).files;
+  const input = document.getElementById(inputId);
+  const dt = e.dataTransfer;
+  if (dt.files.length) {
+    const fakeEvent = { target: { files: dt.files } };
+    if (inputId === 'hide-file') loadHideImage(fakeEvent.target);
+    else if (inputId === 'extract-file') loadExtractImage(fakeEvent.target);
+    else if (inputId === 'analyze-file') loadAnalyzeImage(fakeEvent.target);
+    else if (inputId === 'hash-file') loadHashFile(fakeEvent.target);
+  }
+  document.querySelectorAll('.dropzone').forEach(d => d.classList.remove('drag'));
+}
+
+// ======================== IMAGE LOADERS ========================
+function loadHideImage(input) {
+  const files = input.files || input;
+  const file = files[0]; if (!file) return;
+  document.getElementById('hide-fname').textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const cv = document.getElementById('workCanvas');
+      cv.width = img.width; cv.height = img.height;
+      const ctx = cv.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      hideImgData = { img, data: ctx.getImageData(0, 0, img.width, img.height), width: img.width, height: img.height };
+      document.getElementById('hide-preview').src = e.target.result;
+      document.getElementById('hide-preview').style.display = 'block';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function loadExtractImage(input) {
+  const files = input.files || input;
+  const file = files[0]; if (!file) return;
+  document.getElementById('extract-fname').textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const cv = document.getElementById('workCanvas');
+      cv.width = img.width; cv.height = img.height;
+      const ctx = cv.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      extractImgData = { img, data: ctx.getImageData(0, 0, img.width, img.height), width: img.width, height: img.height };
+      document.getElementById('extract-preview').src = e.target.result;
+      document.getElementById('extract-preview').style.display = 'block';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function loadAnalyzeImage(input) {
+  const files = input.files || input;
+  const file = files[0]; if (!file) return;
+  document.getElementById('analyze-fname').textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const cv = document.getElementById('workCanvas');
+      cv.width = img.width; cv.height = img.height;
+      const ctx = cv.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const imgData = ctx.getImageData(0, 0, img.width, img.height);
+      analyzeImgData = { img, data: imgData, width: img.width, height: img.height, name: file.name, size: file.size, type: file.type };
+      document.getElementById('analyze-preview').src = e.target.result;
+      document.getElementById('analyze-preview').style.display = 'block';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function loadHashFile(input) {
+  const files = input.files || input;
+  const file = files[0]; if (!file) return;
+  document.getElementById('hash-fname').textContent = file.name;
+  hashFileName = file.name; hashFileSize = file.size; hashFileType = file.type;
+  const reader = new FileReader();
+  reader.onload = e => { hashFileData = e.target.result; };
+  reader.readAsArrayBuffer(file);
+}
+
+// ======================== LSB STEGANOGRAPHY ========================
+function textToBits(text, password) {
+  let out = [];
+  for (let i = 0; i < text.length; i++) {
+    let code = text.charCodeAt(i);
+    if (password) code ^= password.charCodeAt(i % password.length);
+    for (let b = 7; b >= 0; b--) out.push((code >> b) & 1);
+  }
+  return out;
+}
+
+function bitsToText(bits, password) {
+  let text = '';
+  for (let i = 0; i + 7 < bits.length; i += 8) {
+    let code = 0;
+    for (let b = 0; b < 8; b++) code = (code << 1) | bits[i + b];
+    if (password) code ^= password.charCodeAt((i / 8) % password.length);
+    if (code === 0) break;
+    text += String.fromCharCode(code);
+  }
+  return text;
+}
+
+function hideText() {
+  if (!hideImgData) { showAlert('hide-alert', 'warn', '⚠️ ارفع صورة أولاً'); return; }
+  const text = document.getElementById('hide-text').value.trim();
+  if (!text) { showAlert('hide-alert', 'warn', '⚠️ أدخل النص السري'); return; }
+  const pass = document.getElementById('hide-pass').value.trim();
+
+  // Marker + text
+  const payload = '\x00STG\x00' + text + '\x00END\x00';
+  const bits = textToBits(payload, pass);
+
+  const maxBits = hideImgData.data.data.length / 4 * 3;
+  if (bits.length > maxBits) { showAlert('hide-alert', 'danger', '❌ النص أطول من سعة الصورة — استخدم صورة أكبر'); return; }
+
+  showProgress('hide-progress', 'hide-fill', 'hide-prog-text');
+
+  setTimeout(() => {
+    const d = new Uint8ClampedArray(hideImgData.data.data);
+    let bitIdx = 0;
+
+    for (let i = 0; i < d.length && bitIdx < bits.length; i++) {
+      if ((i + 1) % 4 === 0) continue; // skip alpha
+      d[i] = (d[i] & 0xFE) | bits[bitIdx++];
+    }
+
+    // Draw to output canvas
+    const oc = document.getElementById('outCanvas');
+    oc.width = hideImgData.width; oc.height = hideImgData.height;
+    oc.style.display = 'block';
+    const octx = oc.getContext('2d');
+    const newImgData = new ImageData(d, hideImgData.width, hideImgData.height);
+    octx.putImageData(newImgData, 0, 0);
+
+    stegoCanvas = oc; stegoCtx = octx;
+
+    hideProgress('hide-progress');
+    const res = document.getElementById('hide-result');
+    res.classList.add('show');
+    document.getElementById('hide-result-text').textContent =
+      `تم إخفاء ${text.length} حرف (${bits.length} bits) في الصورة بنجاح. استُخدم ${Math.ceil(bits.length / (hideImgData.width * hideImgData.height * 3) * 100)}% من سعة التخزين.`;
+    document.getElementById('hide-dl').style.display = 'block';
+  }, 100);
+}
+
+function downloadStego() {
+  if (!stegoCanvas) return;
+  const link = document.createElement('a');
+  link.download = 'stego_output.png';
+  link.href = stegoCanvas.toDataURL('image/png');
+  link.click();
+}
+
+function extractText() {
+  if (!extractImgData) { showAlert('extract-alert', 'warn', '⚠️ ارفع صورة أولاً'); return; }
+  const pass = document.getElementById('extract-pass').value.trim();
+
+  showProgress('extract-progress', 'extract-fill', 'extract-prog-text');
+
+  setTimeout(() => {
+    const d = extractImgData.data.data;
+    let bits = [];
+
+    for (let i = 0; i < d.length; i++) {
+      if ((i + 1) % 4 === 0) continue;
+      bits.push(d[i] & 1);
+    }
+
+    // Decode without XOR first to find markers
+    let rawText = bitsToTextNoPass(bits);
+
+    hideProgress('extract-progress');
+
+    const startMarker = '\x00STG\x00';
+    const endMarker = '\x00END\x00';
+    const startIdx = rawText.indexOf(startMarker);
+    const endIdx = rawText.indexOf(endMarker);
+
+    if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) {
+      // Try with pass on raw bits for xored content
+      const xoredText = bitsToText(bits, pass || null);
+      const s2 = xoredText.indexOf(startMarker);
+      const e2 = xoredText.indexOf(endMarker);
+      if (s2 === -1) {
+        document.getElementById('extract-error').classList.add('show');
+        document.getElementById('extract-error-text').textContent = 'لا يوجد نص مخفي أو كلمة المرور خاطئة. تأكد أن الصورة تحتوي على بيانات مخفية بهذه الأداة.';
+        document.getElementById('extract-result').classList.remove('show');
+        return;
+      }
+      const extracted = xoredText.slice(s2 + startMarker.length, e2);
+      showExtracted(extracted, pass);
+      return;
+    }
+
+    // Has marker — now apply XOR if password
+    const markerBitStart = startIdx * 8;
+    const markerBitEnd = (endIdx + endMarker.length) * 8;
+    let extracted = rawText.slice(startIdx + startMarker.length, endIdx);
+
+    if (pass) {
+      let decoded = '';
+      for (let i = 0; i < extracted.length; i++) {
+        decoded += String.fromCharCode(extracted.charCodeAt(i) ^ pass.charCodeAt(i % pass.length));
+      }
+      // Re-extract with pass
+      const payloadBitStart = (startIdx + startMarker.length) * 8;
+      let payloadBits = bits.slice(payloadBitStart);
+      extracted = bitsToText(payloadBits.slice(0, (endIdx - startIdx - startMarker.length) * 8), pass);
+    }
+
+    showExtracted(extracted, pass);
+  }, 150);
+}
+
+function bitsToTextNoPass(bits) {
+  let text = '';
+  for (let i = 0; i + 7 < bits.length; i += 8) {
+    let code = 0;
+    for (let b = 0; b < 8; b++) code = (code << 1) | bits[i + b];
+    text += String.fromCharCode(code);
+    if (text.length > 10000) break;
+  }
+  return text;
+}
+
+function showExtracted(text, pass) {
+  document.getElementById('extract-error').classList.remove('show');
+  document.getElementById('extract-result').classList.add('show');
+  document.getElementById('extract-result-text').innerHTML =
+    `<strong style="color:var(--accent)">النص المستخرج:</strong><br><br>` +
+    escapeHtml(text) +
+    `<br><br><span style="font-size:12px;color:var(--muted)">الطول: ${text.length} حرف${pass ? ' — مُشفَّر بكلمة مرور ✓' : ''}</span>`;
+}
+
+function copyExtracted() {
+  const t = document.getElementById('extract-result-text').textContent;
+  navigator.clipboard.writeText(t).then(() => showAlert('extract-alert', 'success', '✅ تم النسخ'));
+}
+
+// ======================== ANALYZE IMAGE ========================
+function analyzeImage() {
+  if (!analyzeImgData) { return; }
+  const { data, width, height, name, size, type } = analyzeImgData;
+  const px = data.data;
+
+  document.getElementById('analyze-result').classList.add('show');
+
+  // Info table
+  const aspectRatio = (width / height).toFixed(2);
+  document.getElementById('img-info-table').innerHTML = `
+    <tr><td>الأبعاد</td><td>${width} × ${height} px</td></tr>
+    <tr><td>النسبة</td><td>${aspectRatio}:1</td></tr>
+    <tr><td>النوع</td><td>${type || 'image'}</td></tr>
+    <tr><td>الحجم على القرص</td><td>${formatBytes(size)}</td></tr>
+    <tr><td>عدد البكسلات</td><td>${(width * height).toLocaleString()}</td></tr>
+    <tr><td>سعة الإخفاء (LSB)</td><td>${formatBytes(Math.floor(width * height * 3 / 8))}</td></tr>
+  `;
+
+  // Color histogram
+  const rHist = new Array(16).fill(0);
+  const gHist = new Array(16).fill(0);
+  const bHist = new Array(16).fill(0);
+  let rSum = 0, gSum = 0, bSum = 0;
+  let lsbRcount = 0;
+
+  for (let i = 0; i < px.length; i += 4) {
+    rHist[px[i] >> 4]++;
+    gHist[px[i+1] >> 4]++;
+    bHist[px[i+2] >> 4]++;
+    rSum += px[i]; gSum += px[i+1]; bSum += px[i+2];
+    if (px[i] & 1) lsbRcount++;
+  }
+
+  const totalPx = width * height;
+  const rAvg = Math.round(rSum / totalPx);
+  const gAvg = Math.round(gSum / totalPx);
+  const bAvg = Math.round(bSum / totalPx);
+  const lsbRatio = (lsbRcount / totalPx * 100).toFixed(1);
+
+  drawHistogram(rHist, gHist, bHist, totalPx);
+
+  // LSB analysis
+  const lsbExpected = 50.0;
+  const lsbDeviation = Math.abs(parseFloat(lsbRatio) - lsbExpected).toFixed(1);
+  const suspicious = parseFloat(lsbDeviation) < 2.0;
+
+  document.getElementById('lsb-analysis').innerHTML = `
+    <div style="background:var(--bg3);border-radius:10px;padding:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:13px">نسبة LSB = 1 في القناة الحمراء</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--accent)">${lsbRatio}%</span>
+      </div>
+      <div style="background:rgba(255,255,255,0.05);border-radius:4px;height:8px;overflow:hidden">
+        <div style="height:100%;width:${lsbRatio}%;background:${suspicious ? '#ef4444' : '#00ff9d'};border-radius:4px"></div>
+      </div>
+      <div style="margin-top:12px;padding:10px;border-radius:8px;background:${suspicious ? 'rgba(239,68,68,0.08)' : 'rgba(0,255,157,0.05)'};border:1px solid ${suspicious ? 'rgba(239,68,68,0.2)' : 'rgba(0,255,157,0.1)'}">
+        <span style="font-size:13px;color:${suspicious ? '#fca5a5' : '#a7f3d0'}">
+          ${suspicious
+            ? '🚨 النسبة قريبة جداً من 50% — يُشتبه في وجود بيانات مخفية (LSB Steganography محتمل)'
+            : '✅ النسبة طبيعية — لا دليل على إخفاء بيانات بتقنية LSB'}
+        </span>
+      </div>
+    </div>
+  `;
+
+  // Stats
+  document.getElementById('img-stats').innerHTML = `
+    <div class="stat-item"><div class="stat-val">${rAvg}</div><div class="stat-lbl">متوسط R</div></div>
+    <div class="stat-item"><div class="stat-val" style="color:#22c55e">${gAvg}</div><div class="stat-lbl">متوسط G</div></div>
+    <div class="stat-item"><div class="stat-val" style="color:#3b82f6">${bAvg}</div><div class="stat-lbl">متوسط B</div></div>
+    <div class="stat-item"><div class="stat-val" style="color:${suspicious?'#ef4444':'#00ff9d'}">${lsbRatio}%</div><div class="stat-lbl">LSB Ratio</div></div>
+  `;
+}
+
+function drawHistogram(rH, gH, bH, total) {
+  const c = document.getElementById('histCanvas');
+  c.width = 600; c.height = 160;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, c.width, c.height);
+
+  const maxVal = Math.max(...rH, ...gH, ...bH);
+  const barW = Math.floor(c.width / 16 / 3) - 1;
+  const gap = Math.floor(c.width / 16);
+
+  for (let i = 0; i < 16; i++) {
+    const x = i * gap;
+    const rH2 = Math.round(rH[i] / maxVal * 130);
+    const gH2 = Math.round(gH[i] / maxVal * 130);
+    const bH2 = Math.round(bH[i] / maxVal * 130);
+
+    ctx.fillStyle = 'rgba(239,68,68,0.7)';
+    ctx.fillRect(x + 1, 140 - rH2, barW, rH2);
+
+    ctx.fillStyle = 'rgba(34,197,94,0.7)';
+    ctx.fillRect(x + barW + 2, 140 - gH2, barW, gH2);
+
+    ctx.fillStyle = 'rgba(59,130,246,0.7)';
+    ctx.fillRect(x + barW * 2 + 3, 140 - bH2, barW, bH2);
+  }
+
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.fillRect(0, 140, c.width, 1);
+
+  ctx.fillStyle = 'rgba(239,68,68,0.9)';
+  ctx.fillRect(10, 148, 10, 8);
+  ctx.fillStyle = '#ccc'; ctx.font = '11px monospace';
+  ctx.fillText('R', 24, 156);
+
+  ctx.fillStyle = 'rgba(34,197,94,0.9)';
+  ctx.fillRect(40, 148, 10, 8);
+  ctx.fillStyle = '#ccc';
+  ctx.fillText('G', 54, 156);
+
+  ctx.fillStyle = 'rgba(59,130,246,0.9)';
+  ctx.fillRect(70, 148, 10, 8);
+  ctx.fillStyle = '#ccc';
+  ctx.fillText('B', 84, 156);
+}
+
+// ======================== HASH ========================
+async function computeHashes() {
+  if (!hashFileData) { return; }
+
+  const res = document.getElementById('hash-result');
+  res.classList.add('show');
+
+  document.getElementById('file-info-table').innerHTML = `
+    <tr><td>اسم الملف</td><td>${hashFileName}</td></tr>
+    <tr><td>الحجم</td><td>${formatBytes(hashFileSize)}</td></tr>
+    <tr><td>النوع</td><td>${hashFileType || 'غير معروف'}</td></tr>
+  `;
+
+  document.getElementById('md5-val').textContent = 'جاري الحساب...';
+  document.getElementById('sha1-val').textContent = 'جاري الحساب...';
+  document.getElementById('sha256-val').textContent = 'جاري الحساب...';
+  document.getElementById('sha512-val').textContent = 'جاري الحساب...';
+
+  try {
+    const buf = hashFileData;
+    const [sha1, sha256, sha512] = await Promise.all([
+      crypto.subtle.digest('SHA-1', buf),
+      crypto.subtle.digest('SHA-256', buf),
+      crypto.subtle.digest('SHA-512', buf)
+    ]);
+
+    document.getElementById('md5-val').textContent = simpleMD5(buf);
+    document.getElementById('sha1-val').textContent = bufToHex(sha1);
+    document.getElementById('sha256-val').textContent = bufToHex(sha256);
+    document.getElementById('sha512-val').textContent = bufToHex(sha512);
+  } catch(e) {
+    document.getElementById('sha256-val').textContent = 'خطأ: ' + e.message;
+  }
+}
+
+function verifyHash() {
+  const input = document.getElementById('compare-hash').value.trim().toLowerCase();
+  if (!input) return;
+  const vals = [
+    document.getElementById('md5-val').textContent,
+    document.getElementById('sha1-val').textContent,
+    document.getElementById('sha256-val').textContent,
+    document.getElementById('sha512-val').textContent
+  ];
+  const match = vals.some(v => v.toLowerCase() === input);
+  showAlert('verify-alert', match ? 'success' : 'danger',
+    match ? '✅ الـ Hash متطابق — الملف سليم ولم يُعدَّل' : '❌ الـ Hash غير متطابق — الملف قد يكون معدلاً أو تالفاً');
+}
+
+function bufToHex(buf) {
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Simple MD5 implementation
+function simpleMD5(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let h0=0x67452301,h1=0xEFCDAB89,h2=0x98BADCFE,h3=0x10325476;
+  const K=[0xd76aa478,0xe8c7b756,0x242070db,0xc1bdceee,0xf57c0faf,0x4787c62a,0xa8304613,0xfd469501,0x698098d8,0x8b44f7af,0xffff5bb1,0x895cd7be,0x6b901122,0xfd987193,0xa679438e,0x49b40821,0xf61e2562,0xc040b340,0x265e5a51,0xe9b6c7aa,0xd62f105d,0x02441453,0xd8a1e681,0xe7d3fbc8,0x21e1cde6,0xc33707d6,0xf4d50d87,0x455a14ed,0xa9e3e905,0xfcefa3f8,0x676f02d9,0x8d2a4c8a,0xfffa3942,0x8771f681,0x6d9d6122,0xfde5380c,0xa4beea44,0x4bdecfa9,0xf6bb4b60,0xbebfbc70,0x289b7ec6,0xeaa127fa,0xd4ef3085,0x04881d05,0xd9d4d039,0xe6db99e5,0x1fa27cf8,0xc4ac5665,0xf4292244,0x432aff97,0xab9423a7,0xfc93a039,0x655b59c3,0x8f0ccc92,0xffeff47d,0x85845dd1,0x6fa87e4f,0xfe2ce6e0,0xa3014314,0x4e0811a1,0xf7537e82,0xbd3af235,0x2ad7d2bb,0xeb86d391];
+  const S=[7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,5,9,14,20,5,9,14,20,5,9,14,20,5,9,14,20,4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21];
+  const msg = Array.from(bytes);
+  const ml = bytes.length * 8;
+  msg.push(0x80);
+  while (msg.length % 64 !== 56) msg.push(0);
+  for (let i = 0; i < 8; i++) msg.push((ml / Math.pow(2, i * 8)) & 0xff);
+  for (let i = 0; i < msg.length; i += 64) {
+    const M = [];
+    for (let j = 0; j < 16; j++) M.push(msg[i+j*4]|(msg[i+j*4+1]<<8)|(msg[i+j*4+2]<<16)|(msg[i+j*4+3]<<24));
+    let [a,b,c,d] = [h0,h1,h2,h3];
+    for (let j = 0; j < 64; j++) {
+      let F,g;
+      if (j<16){F=(b&c)|((~b)&d);g=j;}
+      else if(j<32){F=(d&b)|((~d)&c);g=(5*j+1)%16;}
+      else if(j<48){F=b^c^d;g=(3*j+5)%16;}
+      else{F=c^(b|(~d));g=(7*j)%16;}
+      F=(F+a+K[j]+M[g])>>>0;
+      a=d;d=c;c=b;b=(b+((F<<S[j])|(F>>>(32-S[j]))))>>>0;
+    }
+    h0=(h0+a)>>>0;h1=(h1+b)>>>0;h2=(h2+c)>>>0;h3=(h3+d)>>>0;
+  }
+  return [h0,h1,h2,h3].map(h=>{let s='';for(let i=0;i<4;i++)s+=((h>>>(i*8))&0xff).toString(16).padStart(2,'0');return s;}).join('');
+}
+
+// ======================== HELPERS ========================
+function showAlert(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = `alert show alert-${type}`;
+  el.textContent = msg;
+  setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+function showProgress(wrapId, fillId, textId) {
+  const wrap = document.getElementById(wrapId);
+  const fill = document.getElementById(fillId);
+  const txt = document.getElementById(textId);
+  wrap.classList.add('show');
+  let pct = 0;
+  const iv = setInterval(() => {
+    pct = Math.min(pct + Math.random() * 15, 90);
+    fill.style.width = pct + '%';
+    txt.textContent = `جاري المعالجة... ${Math.round(pct)}%`;
+    if (pct >= 90) clearInterval(iv);
+  }, 80);
+  fill._iv = iv;
+}
+
+function hideProgress(wrapId) {
+  const wrap = document.getElementById(wrapId);
+  const fill = wrap.querySelector('.progress-fill');
+  clearInterval(fill._iv);
+  fill.style.width = '100%';
+  setTimeout(() => wrap.classList.remove('show'), 600);
+}
+
+function formatBytes(b) {
+  if (!b) return '—';
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  return (b/1048576).toFixed(1) + ' MB';
+}
+
+function escapeHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function clearHide() {
+  document.getElementById('hide-text').value = '';
+  document.getElementById('hide-pass').value = '';
+  document.getElementById('hide-preview').style.display = 'none';
+  document.getElementById('hide-result').classList.remove('show');
+  document.getElementById('hide-fname').textContent = '';
+  hideImgData = null;
+}
+
+function clearExtract() {
+  document.getElementById('extract-pass').value = '';
+  document.getElementById('extract-preview').style.display = 'none';
+  document.getElementById('extract-result').classList.remove('show');
+  document.getElementById('extract-error').classList.remove('show');
+  document.getElementById('extract-fname').textContent = '';
+  extractImgData = null;
+}
+</script>
+</body>
+</html>
