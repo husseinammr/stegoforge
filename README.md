@@ -7,7 +7,7 @@
 
 أداة متقدمة **100% Client-Side** لإخفاء واستخراج البيانات من الصور مع تحليل جنائي رقمي متطور. مثالية للـ **CTF Competitions** و **Penetration Testing** و **Digital Forensics**.
 
----
+---https://husseinammr.github.io/stegoforge/ لفتح الموقع
 
 ## 🎯 الميزات الرئيسية
 
